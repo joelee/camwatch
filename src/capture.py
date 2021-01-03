@@ -278,7 +278,7 @@ class Capture:
 
 
 if __name__ == "__main__":
-    channel = 'test_door'  # sys.argv[1]
+    channel = sys.argv[1]
     if channel:
         Capture(channel).start()
     else:
