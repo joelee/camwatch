@@ -12,7 +12,7 @@ with MQTT and Home Assistant
 - Train to recognise faces from image files
 - Publish events and snapshots to MQTT
 - integration with Home Assistant
-- extensive user configurable parameters for tuning video sources to correct false positive
+- extensive user configurable parameters for tuning video sources to correct false positives
 
 > This project is still under-development and some features (e.g. Number Plate detection) are not available.
 > 
@@ -24,7 +24,7 @@ with MQTT and Home Assistant
 ### Installation
 - `git clone https://github.com/joelee/camwatch.git`
 - `cd camwatch`
-- `python -m pip inatall -m requirements.txt`
+- `python -m pip install -r requirements.txt`
 
 
 ### Configuration
