@@ -1,0 +1,33 @@
+########
+# Quick start configuration file
+# - contains minimal settings
+# - see camwatch-defaults.yaml for more settings
+########
+
+
+# Video source channels
+channels:
+    # Channel name (to identify the channel)
+    local_webcam:
+        enabled: True
+        capture:
+            # Video source 0 = the first local video device
+            source: 0
+            fps: 15
+            width: 1920
+            height: 1080
+
+    # From an IP Camera source
+    my_ip_cam:
+        enabled: False
+        capture:
+            source: rtsp://host_name:554/channel=1_stream=0.sdp?real_stream
+            width: 1920
+            height: 1080
+
+
+# Service Configuration
+services:
+    # MQTT Settings
+    mqtt:
+        host:         mqtt.example.com

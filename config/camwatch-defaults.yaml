@@ -1,0 +1,229 @@
+########
+# This file contains all the Default Settings
+########
+# Default Settings fof all Channels
+# - can be overwritten by each individual sections
+# - with default values
+default:
+    # Video capture settings
+    capture:
+        # Frames per second
+        fps:         5
+        # seconds to record before motion detected
+        pre_motion:  5
+        # seconds to record after motion detected
+        post_motion: 5
+        # max video length per file in seconds
+        video_len:   300
+        # Frame image width
+        width:       1280
+        # Image height
+        height:      720
+        # Polygon for detection area (None = whole image)
+        areas:       null
+        # Draw detection area (for debugging)
+        draw_areas:  False,
+        # Show frame on OpenCV Window (for debugging)
+        # only works when you run with UI locally
+        show_frame:  False
+
+    # Motion Detection configuration
+    detector:
+        # Minimum area in pixel to trigger detection
+        min_area:            3000
+        # Cool down in second since last movement before
+        #  start detection again
+        cool_down:           5
+        # Number of frames ago to compare motion detection
+        # with the current frame
+        frames_ago:          10
+        # Path to save motion image (Disabled)
+        save_image_path:     null
+        # Draw rectangle on motion
+        draw_rect:           False
+        # rectangle colour array [blue, green, red]
+        # [0, 255, 255] => '#00FFFF' (Yellow)
+        draw_rect_color:
+            -                0
+            -                255
+            -                255
+        # Rectangle line thickness
+        draw_rect_thickness: 2
+        # Path to save motion image
+        # Gaussion Blur settings to pre-process image before
+        # detect for motion
+        gaussian_blur:
+            kernel_size:
+                -            45
+                -            45
+            sigmax:          0
+        # OpenCV Threshold settings
+        threshold:
+            # threshold value
+            value:           35
+            # maximum value to use with the THRESH_BINARY
+            # thresholding types
+            max_value:       255
+
+    # Face Detection configuration
+    face_detect:
+        # Enable Face Detection
+        enabled:             True
+        # Maximum faces to detect in a motion session
+        # Stop further face detection to reduce workload
+        max_face:            1
+        # Parameter specifying how much the image size is reduced
+        # at each image scale.
+        scale_factor:        1.5
+        # Parameter specifying how many neighbors each candidate rectangle
+        # should have to retain it.
+        min_neighbours:      2
+        # Draw rectangle on face
+        draw_rect:           True
+        # rectangle colour array [blue, green, red]
+        # [255, 0, 0] => '#0000FF' (Blue)
+        draw_rect_color:
+            -                255
+            -                0
+            -                0
+        # Rectangle line thickness
+        draw_rect_thickness: 2
+            # Path to save face detected image
+        # Path to save face detected image
+        save_image_path:     /Users/josephlee/Temp/test
+        # Cascade classifier file
+        cascade_file:        cascades/haarcascade_frontalface_alt.xml
+
+    # Car Detection configuration
+    car_detect:
+        # Enable Car Detection
+        enabled: False
+        # Maximum cars to detect in a motion session
+        # Stop further car detection to reduce workload
+        max_car: 1
+        # Parameter specifying how much the image size is reduced
+        # at each image scale.
+        scale_factor: 1.5
+        # Parameter specifying how many neighbors each candidate rectangle
+        # should have to retain it.
+        min_neighbours: 2
+        # Draw rectangle on car
+        draw_rect: True
+        # rectangle colour array [blue, green, red]
+        # [0, 255, 0] => '#00FF00' (Green)
+        draw_rect_color:
+            - 0
+            - 255
+            - 0
+        # Rectangle line thickness
+        draw_rect_thickness: 2
+        # Path to save car detected image
+        save_image_path: null
+        # Cascade classifier file
+        cascade_file: cascades/cars.xml
+
+    # Video Writer configuration
+    writer:
+        # Path to write Video files. None/null = disable
+        location:      null
+        # Record on: motion or always
+        record_on:     motion
+        # Frame per second
+        fps:           5
+        # Video filename format
+        file_format:   "{name}/%Y-%m-%d/{name}-%j-%H%M%S-%f-{enc}.mp4"
+        # Video encoding/codec - fourcc code
+        # Possible options: mp4v, DIVX, XVID, MJPG, X264, WMV1, WMV2
+        file_encoding: mp4v
+        # Image width (0 = use source width)
+        width:         0
+        # Image height (0 = use source height)
+        height:        0
+
+# Service Configuration
+services:
+    # MQTT Settings
+    mqtt:
+        # Hostname or IP Address of MQTT Server
+        # MQTT is disabled if null
+        host:         null
+        # Port of MQTT Server
+        port:         1883
+        # Keep alive connection in seconds
+        keepalive:    120
+        # App Name used for Topic prefix
+        app:          camwatch
+        # Seconds for Motion event to be reset
+        motion_reset: 60
+        # Seconds for Face detected event to be reset
+        face_reset:   60
+        # Seconds for Car detected event to be reset
+        car_reset:    60
+    # Face recognition settings
+    face_recognition:
+        # Enable face recognition
+        enabled: True
+        # Path to store Face recognition files
+        location: null
+        # Retrain face encodings automatically everytime at restart.
+        # Default is Manual Retraining
+        retrain_onstart: False
+        # Use the large (SLOWER) model for face recognition
+        use_large_model: False
+        # How many times to re-sample the face when calculating encoding.
+        # Higher is more accurate, but slower (i.e. 100 is 100x slower)
+        num_jitters: 1
+        # How much distance between faces to consider it a match.Lower is
+        # more strict. 0.6 is typical best performance.
+        tolerance: 0.6
+        # How many times to upsample the image looking for faces.Higher
+        # numbers find smaller faces.
+        n_upsample: 1
+        # Use a more accurate deep-learning model using GPU/CUDA
+        # (if available)
+        cuda_model: False
+        # Reduce the Scale of original image to speed-up recognition
+        scale: 0.75
+        # Minimum score for encoding matching (0.1 to 1.0)
+        min_score: 0.5
+    # Number Plate Recognition (still in development)
+    car_plate_recognition:
+        enabled: False
+
+# Video source channels
+channels:
+    # Channel name (to identify the channel)
+    local_webcam:
+        # Enable or disable this channel
+        enabled: False
+        # Channel sesstings to overwrite the defaults above
+        # (See the "Default Settings fof all Channels" above
+        capture:
+            # Video source 0 = the first local video device
+            source: 0
+            fps: 15
+            pre_frames: 90
+            uptime: 60
+
+    # Another Channel name
+    front_door:
+        enabled: True
+        capture:
+            source: rtsp://host_name:554/channel=1_stream=0.sdp?real_stream
+            width: 1920
+            height: 1080
+            # Polygon specified to limit detection area
+            areas: [
+                [[460, 138], [545, 138], [545, 50], [790, 0], [1919, 0], [1919, 1079], [260, 1079]]
+            ]
+            # Draw detection area
+            draw_areas: True
+
+    # Yet Another Channel name
+    test_video_file:
+        enabled: False
+        capture:
+            # Specify a video file to test/debug detection
+            source: /home/user/front_door-clip.mp4
+            width: 1920
+            height: 1080

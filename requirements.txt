@@ -1,0 +1,9 @@
+pyyaml
+psutil
+requests
+
+numpy
+opencv-python
+face-recognition
+
+paho-mqtt
