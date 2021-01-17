@@ -21,25 +21,23 @@ def detect_car(frame: Frame) -> dict:
     cas = CAR_CASCADE.detectMultiScale(
         frame.img_gray, cfg.scale_factor, cfg.min_neighbours
     )
-    count = len(cas)
+    # has_cas = len(cas)
+    count = 0
     max_area = 0
     zones = []
-    if count > 0:
-        for zone in cas:
-            zone = fix_rect(zone, frame.cfg)
-            x, y, w, h = zone
-            area = w * h
+    area = 0
+    # if has_cas > 0:
+    for zone in cas:
+        zone = fix_rect(zone, frame.cfg)
+        # print(zone)
+        x, y, w, h = zone
+        area = w * h
+        if area >= cfg.min_area and (cfg.max_area == 0 or area <= cfg.max_area):
             if max_area < area:
                 max_area = area
-            if cfg.draw_rect:
-                cv2.rectangle(
-                    frame.image,
-                    (x, y), (x + w, y + h),
-                    cfg.draw_rect_color,
-                    cfg.draw_rect_thickness
-                )
             zones.append(zone)
-
+            count += 1
+    print('Car detected:', count, len(cas), area)
     ret = {
         'car_detected': count,
         'car_area': max_area,

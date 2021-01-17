@@ -7,3 +7,6 @@ opencv-python
 face-recognition
 
 paho-mqtt
+
+imutils
+pytesseract

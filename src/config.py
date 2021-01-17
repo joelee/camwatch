@@ -33,9 +33,9 @@ class Configurator:
             # Frame per second
             'fps': 5,
             # seconds to record before motion detected
-            'pre_motion': 5,
+            'pre_motion': 10,
             # seconds to record after motion detected
-            'post_motion': 5,
+            'post_motion': 60,
             # max video length per file in seconds
             'video_len': 300,
             # num of frames to skip detection when recording starts
@@ -50,6 +50,7 @@ class Configurator:
             'areas': None,
             # Draw detection area (for debugging)
             'draw_areas': False,
+            'draw_area_color': [0, 255, 255],
             # Show frame on OpenCV Window (for debugging)
             'show_frame': False
         },
@@ -95,13 +96,16 @@ class Configurator:
             'enabled': True,
             # Maximum faces to detect in a motion session
             # No face detection after to reduce workload
-            'max_face': 1,
+            'max_face': 100,
+            'resize_img_pixel': 1.0,
+            'convert_gray': False,
+            'upsample': 1,
             # Cascade classifier file
-            'cascade_file': 'cascades/haarcascade_frontalface_alt.xml',
+            # 'cascade_file': 'cascades/haarcascade_frontalface_alt.xml',
             # Parameter specifying how much the image size is reduced at each image scale.
-            'scale_factor': 1.5,
+            # 'scale_factor': 1.5,
             # Parameter specifying how many neighbors each candidate rectangle should have to retain it.
-            'min_neighbours': 2,
+            # 'min_neighbours': 2,
             # Draw rectangle on face
             'draw_rect': False,
             # rectangle colour array [blue, green, red]
@@ -121,9 +125,11 @@ class Configurator:
             # Cascade classifier file
             'cascade_file': 'cascades/cars.xml',
             # Parameter specifying how much the image size is reduced at each image scale.
-            'scale_factor': 1.5,
+            'scale_factor': 1.2,
             # Parameter specifying how many neighbors each candidate rectangle should have to retain it.
             'min_neighbours': 2,
+            'min_area': 0,
+            'max_area': 0,
             # Draw rectangle on face
             'draw_rect': False,
             # rectangle colour array [blue, green, red]
@@ -201,9 +207,19 @@ class Configurator:
             # Minimum score for encoding matching (0.1 to 1.0)
             'min_score': 0.75
         },
-        # Number Plate Recognition (in development)
+        # Number Plate Recognition
         'car_plate_recognition': {
-            'enabled': False
+            # Enable Car Plate Recognition
+            'enabled': False,
+            # Maximum number of candidates
+            'max_candidate': 30,
+            # Car Plate Aspect Ratio [Min, Max]
+            'aspect_ratio': [3.5, 6.0],
+            # Characters whitelisted for OCR
+            'ocr_characters': '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            # Tesseract OCR Page segmentation modes (PSM)
+            'tesseract_mode': 7
+
         }
     }
 
@@ -365,10 +381,17 @@ class Configurator:
         else:
             row['capture']['area_rect'] = None
             row['capture']['area_contours'] = None
+
+        if row['capture']['areas']:
+            areas = []
+            for area in row['capture']['areas']:
+                pts = np.array(area, np.int32)
+                areas.append(pts.reshape((-1, 1, 2)))
+            row['capture']['area_pts'] = areas
+
         if 'mqtt' not in row:
             row['mqtt'] = self.services['mqtt']
         else:
-
             row['mqtt'] = Configurator.__merge_dicts(
                 self.services['mqtt'], row['mqtt']
             )

@@ -1,11 +1,9 @@
 
 import os
-import json
-import numpy as np
+import pickle
 import face_recognition as fr
 
 from config import CV_CONFIG, ConfiguratorException
-from utils import NumpyEncoder
 
 
 class FaceTrainer:
@@ -18,7 +16,7 @@ class FaceTrainer:
         self._path = cfg.location
         if self._path[0:1] != '/':
             self._path = CV_CONFIG.base_path + '/' + self._path
-        self._face_encoding_file = self._path + '/face_encodings.json'
+        self._face_encoding_file = self._path + '/face_encodings.dat'
         self._cfg = cfg
 
     def start(self):
@@ -26,26 +24,21 @@ class FaceTrainer:
         result = {}
         for name, file in self._photo_generator():
             if name not in result:
-                print(f'Training to recognise "{name}"...')
+                print(f'\nTraining to recognise "{name}"')
                 result[name] = []
             image = fr.load_image_file(file)
             result[name].append(fr.face_encodings(
                 image, None, self._cfg.num_jitters,
                 'large' if self._cfg.use_large_model else 'small'
             )[0])
-        with open(self._face_encoding_file, 'w') as fh:
-            json.dump(result, fh, cls=NumpyEncoder)
-        print('Encoding file saved')
+            print('.', end='')
+
+        pickle.dump(result, open(self._face_encoding_file, 'wb'))
+        print(f'\nEncoding file "{self._face_encoding_file}" saved')
 
     def load(self):
-        ret = {}
-        with open(self._face_encoding_file) as fh:
-            data = json.load(fh)
-            for name in data:
-                ret[name] = []
-                for enc in data[name]:
-                    ret[name].append(np.asarray(enc))
-        return ret
+        print(f'Loading encoding file "{self._face_encoding_file}"')
+        return pickle.load(open(self._face_encoding_file, "rb"))
 
     def _photo_generator(self):
         for name in os.listdir(self._path):
@@ -59,4 +52,6 @@ class FaceTrainer:
 
 
 if __name__ == "__main__":
-    FaceTrainer().start()
+    # FaceTrainer().start()
+    data = FaceTrainer().load()
+    print(data)

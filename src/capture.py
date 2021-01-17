@@ -12,6 +12,7 @@ from frame import Frame, KeyFrame
 from tasks import execute_task, execute_threading
 from mqtt_helper import MqttHelper
 from video_writer import VideoWriter
+from face_recog import FaceRecognition
 
 from config import CV_CONFIG
 
@@ -69,6 +70,8 @@ class Capture:
         else:
             self._writer = None
 
+        self.f_recon = FaceRecognition()
+
         self.cfg = cfg
 
         self.mqtt = MqttHelper(cfg)
@@ -101,6 +104,10 @@ class Capture:
         self.completed = False
         self.mqtt.connect()
         cfg = self.cfg
+        wait = (self._f_t_wait, 1, 0)
+        wi = 0
+        w_label = ('Normal', 'Fast', 'Pause')
+        f_ts = time.time()
         while not self.completed:
             _, img = self._cap.read()
             if img is None:
@@ -112,16 +119,34 @@ class Capture:
             self._task_prep_image()
 
             if cfg.capture.show_frame:
+                fps = 1 / (time.time() - f_ts)
+                f_ts = time.time()
+                if self.counter.motion:
+                    label = f'Motion Frame {self.counter.motion}'
+                    cv2.putText(
+                        img, label, (6, 38),
+                        cv2.FONT_HERSHEY_DUPLEX,
+                        0.75, (18, 0, 255), 1
+                    )
+                cv2.putText(
+                    img, w_label[wi] + f' (fps: {fps})', (6, 18),
+                    cv2.FONT_HERSHEY_DUPLEX,
+                    0.75, (18, 255, 0), 1
+                )
                 cv2.imshow(self.name, img)
 
             if self._uptime and self._uptime < time.time() - self.start_ts:
                 print('Uptime reached. Stopping...')
                 self.completed = True
 
-            ch = cv2.waitKey(self._f_t_wait)
+            ch = cv2.waitKey(wait[wi])
             if ch == 27:
                 print('Escape key pressed. Stopping...')
                 self.completed = True
+            elif ch == 32:
+                wi += 1
+                if wi >= len(wait):
+                    wi = 0
 
         if self._writer:
             self._writer.close()
@@ -218,7 +243,6 @@ class Capture:
             f'{self.frame_id}: c={ret.face_detected}, '
             f'ma={ret.face_area}, t={ret.face_ts}'
         )
-
         if self._key_frame.face.area < ret.face_area:
             self._key_frame.face.frame = ret
             self._key_frame.face.area = ret.face_area
@@ -227,6 +251,11 @@ class Capture:
                     'face_detected', ret.image,
                     self.frame_id, self.cfg.mqtt.face_reset
                 )
+        self.f_recon.load_image(self.frame.image).draw_rects()
+        if self.f_recon.locations:
+            cv2.imshow('Face Detected:', self.frame.image)
+
+
 
     def _task_car_detected(self, ret):
         self.counter.car += 1
@@ -235,6 +264,16 @@ class Capture:
             f'{self.frame_id}: c={ret.car}, '
             f'ma={ret.car_area}, t={ret.car_ts}'
         )
+        if self.cfg.car_detect.draw_rect and ret.car_zones:
+            for zone in ret.car_zones:
+                x, y, w, h = zone
+                cv2.rectangle(
+                    self.frame.image,
+                    (x, y), (x + w, y + h),
+                    self.cfg.car_detect.draw_rect_color,
+                    self.cfg.car_detect.draw_rect_thickness
+                )
+
         if self._key_frame.car.area < ret.car_area:
             self._key_frame.car.frame = ret
             self._key_frame.car.area = ret.car_area
@@ -245,6 +284,27 @@ class Capture:
                 )
 
     def _write_frame(self):
+        fd_cfg = self.cfg.face_detect
+        cd_cfg = self.cfg.car_detect
+        frame = self.frame
+        if frame.face_detected and fd_cfg.draw_rect:
+            print('*******Face:', frame.face_zones)
+            for x, y, w, h in frame.face_zones:
+                cv2.rectangle(
+                    frame.image,
+                    (x, y), (x + w, y + h),
+                    fd_cfg.draw_rect_color,
+                    fd_cfg.draw_rect_thickness
+                )
+        if frame.car_detected and cd_cfg.draw_rect:
+            print('*******Car:', frame.car_zones)
+            for x, y, w, h in frame.car_zones:
+                cv2.rectangle(
+                    frame.image,
+                    (x, y), (x + w, y + h),
+                    cd_cfg.draw_rect_color,
+                    cd_cfg.draw_rect_thickness
+                )
         # Always record frames
         if self.cfg.writer.record_on == 'always':
             self._writer.write(self.frame.image)

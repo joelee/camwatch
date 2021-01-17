@@ -2,12 +2,12 @@ FROM python:3.9-buster
 
 RUN mkdir /config
 RUN mkdir /recordings
-RUN mkdir -p /opt/camwatch-ai/src
+RUN mkdir -p /opt/camwatch/src
 
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends git
 
-COPY cam_detector /opt/camwatch-ai/src/
+COPY cam_detector /opt/camwatch/src/
 COPY config/camwatch-quick_start.yaml /config/camwatch.yaml
 COPY config/camwatch-defaults.yaml /config/camwatch-defaults.yaml
 
@@ -22,7 +22,7 @@ RUN chown -R camwatch:camwatch /recordings
 ENV CV_CONFIG_PATH /config
 
 USER camwatch
-WORKDIR /opt/camwatch-ai
+WORKDIR /opt/camwatch
 
 CMD ["bash"]
 # CMD ["python", "./main.py"]

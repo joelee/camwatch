@@ -44,10 +44,11 @@ def detect_face(frame: Frame) -> dict:
         'face_detected': count,
         'face_area': max_area,
         'face_zones': zones,
-        'face_ts': time.time() - ts
+        'face_ts': time.time() - ts,
+        'face_img': frame.image
     }
 
-    img_path = frame.cfg.face_detect.save_image_path
+    img_path = cfg.save_image_path
     if count > 0 and img_path:
         file_name = (
             f'face-{frame.frame}-{count}-{max_area}.jpg'

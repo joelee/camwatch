@@ -98,7 +98,7 @@ class FaceRecognition:
             self._locations = locs
         return self._locations
 
-    def draw_rects(self, ):
+    def draw_rects(self):
         names = self.name_all()
         i = 0
         known_color = (0, 255, 0)
@@ -202,43 +202,20 @@ class FaceRecognition:
 
 if __name__ == '__main__':
     r_path = '/Users/josephlee/Dropbox/Projects/camwatch-ai/var/res'
-
-    detector = dlib.get_frontal_face_detector()
-
     for name in os.listdir(r_path):
         if name[-4:] == '.jpg':
-            f = r_path + '/' + name
-        print("Processing file: {}".format(f))
-        img = dlib.load_rgb_image(f)
-        # The 1 in the second argument indicates that we should upsample the image
-        # 1 time.  This will make everything bigger and allow us to detect more
-        # faces.
-        start_ts = time.time()
-        dets = detector(img, 1)
-        end_ts = time.time() - start_ts
-        print("Number of faces detected: {}".format(len(dets)))
-        for i, d in enumerate(dets):
-            print("Detection {}: Left: {} Top: {} Right: {} Bottom: {}".format(
-                i, d.left(), d.top(), d.right(), d.bottom()))
-        print('Detection time:', end_ts)
-
-
-
-
-    # for name in os.listdir(r_path):
-    #     if name[-4:] == '.jpg':
-    #         img_file = r_path + '/' + name
-    #         print('Scanning:', name)
-    #         recon = FaceRecognition().load_image_file(img_file)
-    #         start_ts = time.time()
-    #         # print(recon.locations)
-    #         # print(recon.recognise_all())
-    #         print(recon.name_all())
-    #         img = recon.draw_rects()
-    #         print('TS:', time.time() - start_ts)
-    #         cv2.imshow('video', img)
-    #         ch = cv2.waitKey()
-    #         if ch == 27:
-    #             print('Escape key pressed. Stopping...')
-    #             break
-    # cv2.destroyAllWindows()
+            img_file = r_path + '/' + name
+            print('Scanning:', name)
+            recon = FaceRecognition().load_image_file(img_file)
+            start_ts = time.time()
+            # print(recon.locations)
+            # print(recon.recognise_all())
+            print(recon.name_all())
+            img = recon.draw_rects()
+            print('TS:', time.time() - start_ts)
+            cv2.imshow('video', img)
+            ch = cv2.waitKey()
+            if ch == 27:
+                print('Escape key pressed. Stopping...')
+                break
+    cv2.destroyAllWindows()

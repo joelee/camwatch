@@ -8,7 +8,7 @@ import threading
 
 from frame import Frame
 from detect_motion import detect_motion
-from detect_face import detect_face
+from detect_face_dlib import detect_face
 from detect_car import detect_car
 
 
@@ -26,10 +26,8 @@ def prep_image(frame: Frame) -> dict:
             x, y, w, h = frame.cfg.capture.area_rect
             img = img[y:h, x:w]
         if frame.cfg.capture.draw_areas:
-            colour = (0, 255, 255)
-            for area in frame.cfg.capture.areas:
-                pts = np.array(area, np.int32)
-                pts = pts.reshape((-1, 1, 2))
+            colour = frame.cfg.capture.draw_area_color
+            for pts in frame.cfg.capture.area_pts:
                 cv2.polylines(frame.image, [pts], True, colour)
 
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)

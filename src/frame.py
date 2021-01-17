@@ -3,7 +3,6 @@ from config import CfgObject
 
 class Frame:
     def __init__(self,
-                 # frame: int,
                  image,
                  cfg: CfgObject,
                  **kwargs):

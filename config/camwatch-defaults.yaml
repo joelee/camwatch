@@ -1,9 +1,8 @@
 ########
 # This file contains all the Default Settings
 ########
-# Default Settings fof all Channels
-# - can be overwritten by each individual sections
-# - with default values
+# Default Settings for all Channels
+# - can be overwritten by each individual channel
 default:
     # Video capture settings
     capture:
@@ -88,8 +87,7 @@ default:
             -                0
         # Rectangle line thickness
         draw_rect_thickness: 2
-            # Path to save face detected image
-        # Path to save face detected image
+        # Path to save detected face images
         save_image_path:     /Users/josephlee/Temp/test
         # Cascade classifier file
         cascade_file:        cascades/haarcascade_frontalface_alt.xml
@@ -188,7 +186,18 @@ services:
         min_score: 0.5
     # Number Plate Recognition (still in development)
     car_plate_recognition:
+        # Enable Car Plate Recognition
         enabled: False
+        # Maximum number of candidates
+        max_candidate: 30
+        # Car Plate Aspect Ratio [Min, Max]
+        aspect_ratio:
+            - 3.5
+            - 6.0
+        # Characters whitelisted for OCR
+        ocr_characters: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
+        # Tesseract OCR Page segmentation modes (PSM)
+        tesseract_mode: 7
 
 # Video source channels
 channels:
@@ -196,8 +205,8 @@ channels:
     local_webcam:
         # Enable or disable this channel
         enabled: False
-        # Channel sesstings to overwrite the defaults above
-        # (See the "Default Settings fof all Channels" above
+        # Channel settings to overwrite the defaults
+        # (See "Default Settings for all Channels" above)
         capture:
             # Video source 0 = the first local video device
             source: 0

@@ -9,14 +9,15 @@ with MQTT and Home Assistant
 ## Features
 - Records video on motion detection
 - Detect faces and cars
-- Train to recognise faces from image files
+- Train recognising faces from image files
+- Detect and OCR Car Number plates  
 - Publish events and snapshots to MQTT
 - integration with Home Assistant
 - extensive user configurable parameters for tuning video sources to correct false positives
 
-> This project is still under-development and some features (e.g. Number Plate detection) are not available.
+> This project is still under-development.
 > 
-> Further updates and documentation improvement are coming in the next few days.
+> Further updates and documentation improvement are coming soon.
  
 
 ## Quick Start
