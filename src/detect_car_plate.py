@@ -9,7 +9,7 @@ from config import CV_CONFIG, ConfiguratorException
 class CarPlateDetection:
     _cfg = None
     _mqtt = None
-    def __init__(self):
+    def __init__(self, img=None):
         cfg = CV_CONFIG.services.car_plate_recognition
         if not cfg.enabled:
             raise ConfiguratorException('Car Plate recognition service is not enabled')
@@ -22,20 +22,17 @@ class CarPlateDetection:
         )
         if CV_CONFIG.services.mqtt.host:
             self._mqtt = CV_CONFIG.services.mqtt
-        self._session = None
+        self._img = None
         self.reset()
+        if img is not None:
+            self.load_image(img)
+            self.locate_plate()
 
     def reset(self):
-        self._img = None
         self.candidates = None
-        self.plate_contour = None
         self.plate_rect = None
         self.plate_img = None
-        self.plate_ocr = None
-
-    def set_session(self, session_id: str):
-        self._session = session_id
-        return self
+        self.plate_text = None
 
     def load_image(self, img):
         self.reset()
@@ -49,34 +46,64 @@ class CarPlateDetection:
     def image(self):
         return self._img
 
-    def ocr_plate(self):
-        if self.plate_img is None:
-            self.locate_plate()
-            if self.plate_img is None:
-                return None
-        self._plate_ocr = pytesseract.image_to_string(
-            self.plate_img,
-            config=self._ocr_opts
+    def draw_rect(self,
+                  img=None,
+                  color=(0, 188, 0),
+                  thickness=2,
+                  show_ocr=False,
+                  font_color=(255, 255, 255),
+                  font_size=0.5
+                  ):
+        if not self.plate_rect:
+            return None
+        if img is None:
+            img = self._img
+        x, y, w, h = self.plate_rect
+        cv2.rectangle(
+            img,
+            (x, y), (x + w, y + h),
+            color,
+            thickness
         )
-        return self.plate_ocr
+        if show_ocr:
+            cv2.rectangle(
+                img,
+                (x, y + h), (x + w, y + h + 20),
+                color, -1
+            )
+            cv2.putText(
+                img,
+                self.plate_text,
+                (x, y + h + 15),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                font_size,
+                font_color,
+                1
+            )
+        return img
 
     def locate_plate(self):
-        plate_contour = None
-        plate_img = None
-        for cnt in self._detect_candidates():
-            (x, y, w, h) = cv2.boundingRect(cnt)
-            aspect_ratio = w / float(h)
+        self.reset()
+        plate_text_len = 0
 
+        for cnt in self._detect_candidates():
+            rect = cv2.boundingRect(cnt)
+            (x, y, w, h) = rect
+            aspect_ratio = w / float(h)
             if aspect_ratio >= self._min_ar and aspect_ratio <= self._max_ar:
-                plate_contour = cnt
                 plate_img = self._img[y:y + h, x:x + w]
-                break
-        self.plate_contour = plate_contour
-        self.plate_img = plate_img
-        if plate_contour is not None:
-            self.plate_rect = cv2.boundingRect(plate_contour)
-        else:
-            self.plate_rect = None
+                ocr_out = pytesseract.image_to_string(
+                    plate_img, config=self._ocr_opts
+                )
+                ocr_text = ocr_out.strip() if isinstance(ocr_out, str) else ''
+                ocr_len = len(ocr_text)
+
+                if ocr_text and ocr_len > 3 and ocr_len > plate_text_len:
+                    self.plate_rect = rect
+                    self.plate_img = plate_img
+                    self.plate_text = ocr_text
+                    plate_text_len = ocr_len
+
         return self.plate_rect
 
     def _detect_candidates(self):
@@ -113,22 +140,3 @@ class CarPlateDetection:
         candidates = sorted(candidates, key=cv2.contourArea, reverse=True)
         self.candidates = candidates[:self._cfg.max_candidate]
         return self.candidates
-
-
-if __name__ == '__main__':
-    img_file = '/Users/josephlee/Dropbox/Projects/camwatch-ai/var/res/car-ukreg-1.jpg'
-    img = cv2.imread(img_file)
-
-    creg = CarPlateDetection().load_image(img)
-    cnp_text = creg.ocr_plate()
-    x, y, w, h = cv2.boundingRect(creg.plate_contour)
-    cv2.rectangle(
-        img,
-        (x, y), (x + w, y + h),
-        (255, 0, 0),
-        2
-    )
-
-    print('OCRed Number Plate:', cnp_text)
-    cv2.imshow("Number Plate", img)
-    cv2.waitKey(0)
