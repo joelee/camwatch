@@ -12,7 +12,6 @@ from frame import Frame, KeyFrame
 from tasks import execute_task, execute_threading
 from mqtt_helper import MqttHelper
 from video_writer import VideoWriter
-from face_recog import FaceRecognition
 
 from config import CV_CONFIG
 
@@ -39,6 +38,22 @@ class Capture:
     counter = Counter()
     frame = None
     _key_frame = KeyFrame()
+
+    @staticmethod
+    def _load_face_recognition():
+        if not CV_CONFIG.services.face_recognition.enabled:
+            return None
+        try:
+            from face_recog import FaceRecognition
+        except ImportError as exc:
+            print('Face recognition unavailable:', exc)
+            print('Install optional dependencies with `uv sync --extra face`.')
+            return None
+        try:
+            return FaceRecognition()
+        except Exception as exc:
+            print('Face recognition disabled:', exc)
+            return None
 
     def __init__(self, channel: str):
         self.name = channel
@@ -70,7 +85,7 @@ class Capture:
         else:
             self._writer = None
 
-        self.f_recon = FaceRecognition()
+        self.f_recon = self._load_face_recognition()
 
         self.cfg = cfg
 
@@ -251,6 +266,8 @@ class Capture:
                     'face_detected', ret.image,
                     self.frame_id, self.cfg.mqtt.face_reset
                 )
+        if self.f_recon is None:
+            return
         self.f_recon.load_image(self.frame.image).draw_rects()
         if self.f_recon.locations:
             cv2.imshow('Face Detected:', self.frame.image)

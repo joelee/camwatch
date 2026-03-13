@@ -160,7 +160,7 @@ services:
     # Face recognition settings
     face_recognition:
         # Enable face recognition
-        enabled: True
+        enabled: False
         # Path to store Face recognition files
         location: null
         # Retrain face encodings automatically everytime at restart.

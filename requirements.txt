@@ -1,3 +1,8 @@
+# Deprecated: CamWatch now uses uv and pyproject.toml for dependency management.
+# Prefer `uv sync` from the repository root.
+# This file is kept temporarily for compatibility during migration.
+# Python 3.14 users should treat face recognition as optional for now.
+
 pyyaml
 psutil
 requests
@@ -10,3 +15,6 @@ paho-mqtt
 
 imutils
 pytesseract
+
+# Optional legacy extra:
+# face-recognition
