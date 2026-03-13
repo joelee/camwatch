@@ -1,13 +1,26 @@
 
 import os
 import pickle
-import face_recognition as fr
 
 from config import CV_CONFIG, ConfiguratorException
 
 
+try:
+    import face_recognition as fr
+except ImportError as exc:
+    fr = None
+    FACE_RECOGNITION_IMPORT_ERROR = exc
+else:
+    FACE_RECOGNITION_IMPORT_ERROR = None
+
+
 class FaceTrainer:
     def __init__(self):
+        if fr is None:
+            raise ConfiguratorException(
+                'Face recognition dependencies are not installed. '
+                'Run `uv sync --extra face` after installing system build tools.'
+            ) from FACE_RECOGNITION_IMPORT_ERROR
         cfg = CV_CONFIG.services.face_recognition
         if not cfg.enabled:
             raise ConfiguratorException('Face recognition service is not enabled')

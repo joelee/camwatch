@@ -3,18 +3,35 @@ import time
 import os
 import numpy as np
 import cv2
-import dlib
-import face_recognition as fr
-from face_trainer import FaceTrainer
 from config import CV_CONFIG, ConfiguratorException
 
-NAME_ENCODINGS = FaceTrainer().load()
+
+try:
+    import dlib  # noqa: F401
+    import face_recognition as fr
+except ImportError as exc:
+    dlib = None
+    fr = None
+    FACE_RECOGNITION_IMPORT_ERROR = exc
+else:
+    FACE_RECOGNITION_IMPORT_ERROR = None
+
+
+def _load_name_encodings():
+    if fr is None:
+        raise ConfiguratorException(
+            'Face recognition dependencies are not installed. '
+            'Run `uv sync --extra face` after installing system build tools.'
+        ) from FACE_RECOGNITION_IMPORT_ERROR
+    from face_trainer import FaceTrainer
+    return FaceTrainer().load()
 
 
 class FaceRecognition:
     _cfg = None
     _mqtt = None
     def __init__(self):
+        self._name_encodings = _load_name_encodings()
         cfg = CV_CONFIG.services.face_recognition
         if not cfg.enabled:
             raise ConfiguratorException('Face recognition service is not enabled')
@@ -162,8 +179,8 @@ class FaceRecognition:
 
     def _compare(self, face_encoding):
         ret = {}
-        for name in NAME_ENCODINGS:
-            encs = NAME_ENCODINGS[name]
+        for name in self._name_encodings:
+            encs = self._name_encodings[name]
             comp = fr.compare_faces(encs, face_encoding, self._cfg.tolerance)
             ret[name] = comp.count(True) / len(encs)
         return ret
@@ -171,8 +188,8 @@ class FaceRecognition:
     def _get_name(self, face_encoding):
         ret_name = None
         val = 0
-        for name in NAME_ENCODINGS:
-            encs = NAME_ENCODINGS[name]
+        for name in self._name_encodings:
+            encs = self._name_encodings[name]
             comp = fr.compare_faces(encs, face_encoding, self._cfg.tolerance)
             c_val = comp.count(True) / len(encs)
             if val < c_val:

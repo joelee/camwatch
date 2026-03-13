@@ -1,0 +1,24 @@
+[project]
+name = "camwatch"
+version = "0.3.0"
+description = "Computer-vision video monitoring with motion, face, and car detection"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "pyyaml",
+    "psutil",
+    "requests",
+    "numpy",
+    "opencv-python",
+    "paho-mqtt",
+    "imutils",
+    "pytesseract",
+]
+
+[project.optional-dependencies]
+face = [
+    "face-recognition",
+]
+
+[tool.uv]
+package = false

@@ -25,7 +25,12 @@ with MQTT and Home Assistant
 ### Installation
 - `git clone https://github.com/joelee/camwatch.git`
 - `cd camwatch`
-- `python -m pip install -r requirements.txt`
+- Install `uv`: https://docs.astral.sh/uv/getting-started/installation/
+- Install native build/runtime dependencies required by OpenCV, dlib, and Tesseract on your system
+- `uv venv --python 3.14.3`
+- `uv sync`
+- `requirements.txt` is deprecated and only kept temporarily for compatibility
+- Face recognition is optional on Python 3.14 for now; try `uv sync --extra face` only after installing native build tooling and validating `dlib`
 
 
 ### Configuration
@@ -35,11 +40,12 @@ with MQTT and Home Assistant
 
 
 ### Start monitoring a video channel
-- `python src/capture.py {channel_name}`
+- `uv run python src/capture.py {channel_name}`
 
 
 ### Start face recognition training
 - Set the path of your training data in the configuration: `services.face_recognition.location`
+- Install the optional face stack first: `uv sync --extra face`
 - Add the face photos under named sub-folders, e.g.:
     - `john/`
         - `john_photo1.jpg`
@@ -47,7 +53,5 @@ with MQTT and Home Assistant
     - `jill/`
         - `jill_photo1.jpg`
         - `jill_photo2.jpg`
-- Start trainer: `python src/face_trainer.py`
+- Start trainer: `uv run python src/face_trainer.py`
     
-
-
